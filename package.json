@@ -4,33 +4,43 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host",
     "build": "vite build",
     "preview": "vite preview"
   },
   "devDependencies": {
+    "@iconify/icons-codicon": "^1.2.21",
+    "@iconify/svelte": "^3.1.0",
     "@popperjs/core": "^2.11.6",
     "@sveltejs/vite-plugin-svelte": "^2.0.2",
     "autoprefixer": "^10.4.13",
     "classnames": "^2.3.2",
-    "flowbite": "^1.6.2",
-    "flowbite-svelte": "^0.29.11",
+    "flowbite": "^1.6.3",
+    "flowbite-svelte": "^0.29.12",
     "postcss": "^8.4.21",
     "postcss-load-config": "^4.0.1",
     "svelte": "^3.55.1",
     "svelte-loading-spinners": "^0.3.4",
     "svelte-motion": "^0.11.5",
-    "svelte-preprocess": "^4.10.7",
+    "svelte-preprocess": "^5.0.1",
     "tailwindcss": "^3.2.4",
     "tailwindcss-animate": "^1.0.5",
-    "vite": "^4.0.4"
+    "vite": "^4.0.4",
+    "vite-plugin-mkcert": "^1.13.0"
   },
   "dependencies": {
-    "@formkit/auto-animate": "1.0.0-beta.5",
+    "@formkit/auto-animate": "1.0.0-beta.6",
     "jzz": "^1.5.9",
-    "lottie-web": "^5.10.1",
+    "jzz-gui-select": "^1.0.8",
+    "lottie-web": "^5.10.2",
+    "pepjs": "^0.5.3",
+    "pnpm": "^7.26.0",
+    "svelte-grid": "^5.1.1",
     "svelte-inview": "^3.0.2",
+    "svelte-json-tree": "^1.0.0",
     "svelte-local-storage-store": "^0.4.0",
-    "svelte-transition": "^0.0.7"
+    "svelte-tabs": "^1.1.0",
+    "svelte-transition": "^0.0.7",
+    "victor": "^1.1.0"
   }
 }

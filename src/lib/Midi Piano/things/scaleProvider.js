@@ -1,5 +1,6 @@
 import { noteType } from "./noteType";
 import scaleDatabase from "../../../assets/ScaleDatabase.json";
+import scaleRules from "../../../assets/ScaleRules.json";
 
 export function createAllowedNotes(scaleType) {
   let scaleData = scaleDatabase["scaleTypes"][scaleType];
@@ -69,36 +70,25 @@ export function createGrid({
   var scaleNotesData = createAllowedNotes(scaleType);
   let startingNoteID = rootNote - firstOffset;
 
-  // let notesNeeded = gridCols * gridRows;
-  //   let endingNoteNumber =
-  //     startingNoteNumber + rowOffsetList_Absolute[scaleRows] + scaleCols; //=
-
-  //   var gridNotesList = [];
-  //   for (var i = startingNoteNumber; i < startingNoteNumber + 24; i++) {
-  //     gridNotesList.push({
-  //       id: i,
-  //       name: `${scaleDatabase.notesList["sharp"][i % 12]}${Math.floor(i / 12)}`,
-  //       type: scaleNotesData[i % 12],
-  //     });
-  //   }
-
   var grid = [];
   for (var rowN = 0; rowN < gridRows; rowN++) {
     var thisRow = [];
     for (let colN = 0; colN < gridCols; colN++) {
       let id = startingNoteID + rowOffsetList_Absolute[rowN] + colN;
+      // thisRow.push(
       thisRow.push(
         // Constructing Note Object
         {
           id: id,
-          name: `${scaleDatabase.notesList["sharp"][id % 12]}${Math.floor(
+          name: `${scaleRules.notesList["sharp"][id % 12]}${Math.floor(
             id / 12
           )}`,
           type: scaleNotesData[id % 12],
         }
       );
     }
-    grid.push(thisRow);
+    // grid.push(thisRow);
+    grid = [thisRow, ...grid];
   }
 
   return grid;

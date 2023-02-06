@@ -1,146 +1,111 @@
 <script>
-import { onMount } from "svelte";
-import * as jzz from "jzz";
+//#region //? imports
+import { onDestroy, onMount } from "svelte";
 import {
   scaleRoot,
-  scaleOctave,
+  // scaleOctave,
   scaleType,
   gridRows,
   gridCols,
   scaleOffsetRule,
   midiOutPort,
+  pitchBendRange,
 } from "./midiPianoLocal";
-import ScaleChanger from "./things/scaleChanger.svelte";
+import ScaleChanger from "./things/TopBar.svelte";
 import { createGrid } from "./things/scaleProvider";
-scaleRoot;
+import FxMousePointer from "./things/Comp_FX/FxMousePointer.svelte";
+import Victor from "victor";
+//#endregion
 
+let XreactiveSpaces = {};
+let diatonicControlSpace;
+let gravityCenter;
 var activeNote = null;
-var scaleGrid = createGrid({
-  rootNote: 60,
+
+$: scaleGrid = createGrid({
+  rootNote: $scaleRoot,
   scaleType: $scaleType,
   gridRows: $gridRows,
   gridCols: $gridCols,
 });
 
-//#region //? settings change
-function settingsChange() {
-  var activeNote = null;
-  var scaleGrid = createGrid({
-    rootNote: 60,
-    scaleType: $scaleType,
-    gridRows: $gridRows,
-    gridCols: $gridCols,
-  });
-}
-//#endregion
-
 //#region //? Note Events
-let mouseX = 0;
-let mouseY = 0;
-let mousePressed = false;
+let mousePos = { x: 0, y: 0 };
+let gravityPos = { x: 0, y: 0 };
+let isMouseDown = false;
 let currentNoteID = -1;
 let currentPitch = 0;
-let startX = 0;
-let startY = 0;
-let port;
+let gridHeight, gridWidth;
 
-onMount(() => {
-  window.addEventListener("mousemove", (event) => {
-    mouseX = event.clientX;
-    mouseY = event.clientY;
-    if (mousePressed) {
-      currentPitch = mouseX - startX;
-    }
-  });
-  window.addEventListener("mousedown", (event) => {
-    mousePressed = true;
-    startX = mouseX;
-    startY = mouseY;
-    console.log(event.target);
-    currentNoteID = event.target.dataset.noteid;
-    currentPitch = 0;
-  });
-  window.addEventListener("mouseup", (event) => {
-    mousePressed = false;
-    currentNoteID = -1;
-    currentPitch = 0;
-  });
-
-  port = jzz()
-    .or("Cannot start MIDI engine!")
-    .openMidiOut($midiOutPort)
-    .or("MIDI-Out: Cannot open!")
-    .and(function () {
-      console.log("MIDI-Out:", this.name());
-    });
-});
-
-function playNote(note) {
-  // Use the Web Audio API or a library to play the note
-  console.log(`Playing note ${note}`);
+$: {
+  try {
+    console.log(diatonicControlSpace.getBoundingClientRect());
+  } catch (error) {}
 }
 
-function handleMouseMove(e) {}
-
-function stopNote(note) {
-  // Use the Web Audio API or a library to stop the note
-  console.log(`Stopping note ${note}`);
-}
-
-function handleClick(event) {
-  if (event.target.nodeName === "TD") {
-    let note = event.target.dataset.noteid;
-
-    // let prevActiveNote = activeNote;
-    // activeNote = note;
-    // if (prevActiveNote) {
-    //   stopNote(prevActiveNote);
-    // }
-
-    playNote(note);
+let currentElement, centerX, centerY, currentNoteID2, mouseEvent_Dia;
+export function handleMouseMove(e) {
+  try {
+    mouseEvent_Dia = e;
+    mousePos.x = mouseEvent_Dia.clientX;
+    mousePos.y = mouseEvent_Dia.clientY;
+    currentNoteID = mouseEvent_Dia.target.dataset.noteid;
+  } catch {
+    currentNoteID2 = -1;
   }
 }
-//#endregion
 
-// // send midi for every change
-$: currentNoteID, {};
-// $: send midi (currentPitch)
+$: {
+  currentNoteID;
+  updateGravity();
+}
+
+function updateGravity() {
+  try {
+    if (mouseEvent_Dia.target.nodeName === "TD") {
+      let boundingRect = mouseEvent_Dia.target.getBoundingClientRect();
+      gravityPos.x = boundingRect.left + boundingRect.width / 2;
+      gravityPos.y = boundingRect.top + boundingRect.height / 2;
+      gravityCenter.style.left = gravityPos.x + "px";
+      gravityCenter.style.top = gravityPos.y + "px";
+    }
+    // console.log(gravityCenter);
+  } catch (error) {}
+}
 </script>
 
+<!--? DEBUGGING -->
 <!-- svelte-ignore a11y-click-events-have-key-events -->
-
-<!-- <canvas
-  ref={(el) => {
-    canvas = el;
-    ctx = canvas.getContext("2d");
-  }}
-  on:mousedown={handleMouseDown}
-  on:mousemove={handleMouseMove}
-  on:mouseup={handleMouseUp}
-  on:mouseleave={handleMouseUp}
->
-  Sorry, your browser doesn't support canvas.
-</canvas> -->
-
-<div class="absolute text-red-800">
+<div class="absolute text-blue-800 z-30 pointer-events-none select-none">
   note: {currentNoteID} <br />
   pitch: {currentPitch} <br />
-  pressed: {mousePressed}
+  pressed: {isMouseDown}
 </div>
 
+<!-- ? Main things -->
 <div
-  class="w-screen h-screen"
-  on:mousedown="{(e) => {
-    currentNoteID = e.target.dataset.noteid;
-    currentPitch = 0;
+  class="w-screen h-screen flex flex-col"
+  on:mousemove="{(e) => {
+    handleMouseMove(e);
   }}"
 >
+  <div class="min-h-[40px] h-[1/12] max-h-24 ">
+    <ScaleChanger />
+  </div>
   <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <table on:click="{handleClick}" class="w-full h-full">
+  <table
+    bind:this="{diatonicControlSpace}"
+    id="diatonic_controller"
+    class="w-full flex-grow table-fixed"
+    bind:clientHeight="{gridHeight}"
+    bind:clientWidth="{gridWidth}"
+  >
     {#each scaleGrid as row}
       <tr>
         {#each row as cell}
-          <td class="bg-red-300 rounded-xl text-center" data-noteID="{cell.id}"
+          <td
+            class="bg-red-300 border-black border-2 text-center"
+            data-noteID="{cell.id}"
             ><span class="pointer-events-none select-none">
               {cell.name}</span
             ></td
@@ -151,17 +116,9 @@ $: currentNoteID, {};
   </table>
 </div>
 
-<!-- svelte-ignore a11y-click-events-have-key-events
-<table on:click="{handleClick}">
-  {#each scaleGrid as row}
-    <tr>
-      {#each row as cell}
-        <td class:active="{cell.active}">{cell.note}</td>
-      {/each}
-    </tr>
-  {/each}
-</table> -->
+<FxMousePointer mousePos="{mousePos}" gravityPos="{gravityPos}" />
 
-<!-- trying with chatGPT
-  in svelte, create a canvas that has a table. when mouse is pressed down on a cell, "note on" midi is sent. when mouse is dragged left or right, "pitchbend" midi is sent according to how much horizontal mouse movement is occured. note that when dragging, mouse could leave the button and go further. "pitchbend" should still be sent. when the mouse is released, "note off" midi should be sent.
- -->
+<div
+  bind:this="{gravityCenter}"
+  class="bg-blue-700 h-3 w-3 z-50 absolute"
+></div>
