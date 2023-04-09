@@ -1,9 +1,12 @@
-// @ts-nocheck
 /* multi-touch tracker with pointer events support and a hacky HUD */
 
-var canvas, c, pressure;
-// c is the canvas' context 2D
-var devicePixelRatio, container;
+import { debounce } from "./debounce.js";
+
+var canvas, c; // c is the canvas' context 2D
+var devicePixelRatio;
+var container;
+var radius;
+var rect;
 
 var points = [];
 
@@ -12,6 +15,7 @@ function draw() {
   /* hack to work around lack of orientationchange/resize event */
   if (canvas.height != window.innerHeight * devicePixelRatio) {
     resetCanvas();
+    rect = canvas.getBoundingClientRect();
   } else {
     c.clearRect(0, 0, canvas.width, canvas.height);
   }
@@ -24,19 +28,19 @@ function draw() {
       typeof points[i].pressure != "undefined" &&
       points[i].pressure != null
     ) {
-      pressure = 35 + points[i].pressure * 25;
+      radius = 35 + points[i].pressure * 25;
     } else if (
       typeof points[i].force != "undefined" &&
       points[i].force != null
     ) {
-      pressure = 35 + points[i].force * 25;
+      radius = 35 + points[i].force * 25;
     } else if (
       typeof points[i].webkitForce != "undefined" &&
       points[i].webkitForce != null
     ) {
-      pressure = 35 + points[i].webkitForce * 25;
+      radius = 35 + points[i].webkitForce * 25;
     } else {
-      pressure = 50;
+      radius = 50;
     }
 
     pressure =
@@ -62,8 +66,8 @@ function draw() {
     /* draw all circles */
     c.beginPath();
     c.ellipse(
-      points[i].clientX,
-      points[i].clientY,
+      points[i].clientX - rect.x, //  ///////// /////////////// ///////// /////////////////////,
+      points[i].clientY + rect.y,
       radiusX,
       radiusY,
       (rotationAngle * Math.PI) / 180,
@@ -79,8 +83,8 @@ function draw() {
       radiusY += 15;
       c.beginPath();
       c.ellipse(
-        points[i].clientX,
-        points[i].clientY,
+        points[i].clientX - rect.x,
+        points[i].clientY - rect.y,
         radiusX,
         radiusY,
         (rotationAngle * Math.PI) / 180,
@@ -358,6 +362,7 @@ function init() {
     },
     false
   );
+  rect = canvas.getBoundingClientRect();
 }
 
 function resetCanvas() {

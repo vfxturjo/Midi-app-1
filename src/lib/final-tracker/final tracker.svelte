@@ -1,98 +1,31 @@
-// @ts-nocheck
-/* multi-touch tracker with pointer events support and a hacky HUD */
+<script>
+import { debounce } from "./debounce.js";
 
-var canvas, c, pressure;
-// c is the canvas' context 2D
-var devicePixelRatio, container;
+var canvas, c; // c is the canvas' context 2D
+var devicePixelRatio;
+var container;
+var rect;
 
 var points = [];
 
 function draw() {
   var radiusX, radiusY, rotationAngle, pressure;
+
+  //#region //? reset for orientation change
   /* hack to work around lack of orientationchange/resize event */
+  //////////// Implement a reset button>>>???
   if (canvas.height != window.innerHeight * devicePixelRatio) {
     resetCanvas();
+    rect = canvas.getBoundingClientRect();
   } else {
     c.clearRect(0, 0, canvas.width, canvas.height);
   }
-  c.strokeStyle = "#eee";
-  c.lineWidth = "10";
+  //#endregion
 
   for (var i = 0, l = points.length; i < l; i++) {
-    /* if pressure property is present and not 0, set radius, otherwise default */
-    if (
-      typeof points[i].pressure != "undefined" &&
-      points[i].pressure != null
-    ) {
-      pressure = 35 + points[i].pressure * 25;
-    } else if (
-      typeof points[i].force != "undefined" &&
-      points[i].force != null
-    ) {
-      pressure = 35 + points[i].force * 25;
-    } else if (
-      typeof points[i].webkitForce != "undefined" &&
-      points[i].webkitForce != null
-    ) {
-      pressure = 35 + points[i].webkitForce * 25;
-    } else {
-      pressure = 50;
-    }
-
-    pressure =
-      points[i].pressure || points[i].force || points[i].webkitForce || 0.1;
-    rotationAngle = points[i].rotationAngle || 0;
-    if (points[i].radiusX && points[i].radiusY) {
-      radiusX = points[i].radiusX;
-      radiusY = points[i].radiusY;
-    } else if (
-      points[i].width &&
-      points[i].width != 0 &&
-      points[i].height &&
-      points[i].height != 0
-    ) {
-      radiusX = points[i].width / 2;
-      radiusY = points[i].height / 2;
-    } else {
-      radiusX = radiusY = 40;
-    }
-    radiusX += pressure * 35;
-    radiusY += pressure * 35;
-
-    /* draw all circles */
-    c.beginPath();
-    c.ellipse(
-      points[i].clientX,
-      points[i].clientY,
-      radiusX,
-      radiusY,
-      (rotationAngle * Math.PI) / 180,
-      0,
-      Math.PI * 2,
-      true
-    );
-    c.stroke();
-
-    // for pointer events, add extra circle to denote a primary pointer
-    if (points[i].isPrimary) {
-      radiusX += 15;
-      radiusY += 15;
-      c.beginPath();
-      c.ellipse(
-        points[i].clientX,
-        points[i].clientY,
-        radiusX,
-        radiusY,
-        (rotationAngle * Math.PI) / 180,
-        0,
-        Math.PI * 2,
-        true
-      );
-      c.stroke();
-    }
-
     // HUD (hacky)
     var hud_props = [];
+
     switch (points[i].type) {
       case undefined:
         hud_props = ["touch", "identifier: " + points[i].identifier];
@@ -100,38 +33,18 @@ function draw() {
           hud_props.push("touchType: " + points[i].touchType);
         }
         hud_props.push(
+          /////!!!! optimize the toFixed(n) func
           "clientX: " +
-            points[i].clientX.toFixed(5) +
+            points[i].clientX.toFixed(2) +
             " clientY: " +
-            points[i].clientY.toFixed(5)
+            points[i].clientY.toFixed(2)
         );
-        if (
-          points[i].radiusX !== undefined &&
-          points[i].radiusY !== undefined
-        ) {
-          hud_props.push(
-            "radiusX: " +
-              points[i].radiusX.toFixed(5) +
-              " radiusY: " +
-              points[i].radiusY.toFixed(5)
-          );
-        }
-        if (points[i].rotationAngle !== undefined) {
-          hud_props.push(
-            "rotationAngle: " + points[i].rotationAngle.toFixed(5)
-          );
-        }
-        if (
-          points[i].altitudeAngle !== undefined &&
-          points[i].azimuthAngle !== undefined
-        ) {
-          hud_props.push(
-            "altitudeAngle: " +
-              points[i].altitudeAngle.toFixed(5) +
-              " azimuthAngle: " +
-              points[i].azimuthAngle.toFixed(5)
-          );
-        }
+        hud_props.push(
+          "rectX: " +
+            points[i].clientX.toFixed(2) +
+            " rectY: " +
+            points[i].clientY.toFixed(2)
+        );
         if (
           points[i].force !== undefined ||
           points[i].webkitForce !== undefined
@@ -144,6 +57,7 @@ function draw() {
           );
         }
         break;
+
       case "pointerover":
       case "pointerdown":
       case "pointermove":
@@ -164,39 +78,27 @@ function draw() {
             points[i].clientX.toFixed(5) +
             " clientY: " +
             points[i].clientY.toFixed(5),
+          "rectX: " +
+            (points[i].clientX.toFixed(5) - rect.x) +
+            " clientY: " +
+            (points[i].clientY.toFixed(5) - rect.y),
           "button: " + points[i].button,
           "buttons: " + points[i].buttons,
-          "width: " + points[i].width.toFixed(5),
-          "height: " + points[i].height.toFixed(5),
-          "tiltX: " +
-            points[i].tiltX.toFixed(5) +
-            " tiltY: " +
-            points[i].tiltY.toFixed(5),
+          "pressure: " + points[i].pressure.toFixed(5),
         ];
-        if (points[i].azimuthAngle !== undefined) {
-          hud_props.push("azimuthAngle: " + points[i].azimuthAngle.toFixed(5));
-        }
-        if (points[i].altitudeAngle !== undefined) {
-          hud_props.push(
-            "altitudeAngle: " + points[i].altitudeAngle.toFixed(5)
-          );
-        }
-        if (points[i].twist !== undefined) {
-          hud_props.push("twist: " + points[i].twist.toFixed(5));
-        }
-        if (points[i].tangentialPressure !== undefined) {
-          hud_props.push(
-            "tangentialPressure: " + points[i].tangentialPressure.toFixed(5)
-          );
-        }
-        hud_props.push("pressure: " + points[i].pressure.toFixed(5));
+
         break;
+
       case "mousedown":
       case "mousemove":
       case "mouseup":
         hud_props = [
           "mouse",
           "clientX: " + points[i].clientX + " clientY: " + points[i].clientY,
+          "rectX: " +
+            (points[i].clientX - rect.x) +
+            " rectY: " +
+            (points[i].clientY - rect.y),
         ];
         if (
           points[i].force !== undefined ||
@@ -209,24 +111,25 @@ function draw() {
           );
         }
         break;
+
+      default:
+        console.log("donnnoo");
     }
+
     c.font = "30px Arial";
     c.fillStyle = "#fff";
-    c.fillText(
-      hud_props[0],
-      points[i].clientX + radiusX + 20,
-      points[i].clientY
-    );
-    c.fillStyle = "#aaa";
+    c.fillText(hud_props[0], points[i].clientX, points[i].clientY);
+    c.fillStyle = "#222";
     c.font = "10px Arial";
     for (var h_i = 1, h_j = hud_props.length; h_i < h_j; h_i++) {
       c.fillText(
         hud_props[h_i],
-        points[i].clientX + radiusX + 20,
-        points[i].clientY + (h_i + 1) * 12
+        points[i].clientX,
+        points[i].clientY + (h_i + 1) * 12 - rect.y
       );
     }
   }
+  console.log(hud_props);
 }
 
 function positionHandler(e) {
@@ -256,6 +159,8 @@ function positionHandler(e) {
       }
     }
     // add in all entries from the array-like targetTouches
+
+    // @ts-ignore
     for (var i = 0, l = e.targetTouches.length; i < l; i++) {
       points.push(e.targetTouches[i]);
     }
@@ -298,7 +203,7 @@ function positionHandler(e) {
 }
 
 function init() {
-  canvas = document.createElement("canvas");
+  //   canvas = document.createElement("canvas");
   c = canvas.getContext("2d");
   container = document.createElement("div");
   container.className = "container";
@@ -358,6 +263,7 @@ function init() {
     },
     false
   );
+  rect = canvas.getBoundingClientRect();
 }
 
 function resetCanvas() {
@@ -378,3 +284,6 @@ window.addEventListener(
   },
   false
 );
+</script>
+
+<canvas id="theCanvas" bind:this="{canvas}"></canvas>

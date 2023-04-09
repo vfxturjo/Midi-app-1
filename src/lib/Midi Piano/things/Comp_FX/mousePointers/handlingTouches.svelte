@@ -9,7 +9,7 @@ import startCanvas from "./dependencies/myhandler.js";
 import { onMount } from "svelte";
 
 onMount(() => {
-  startCanvas("multiTouch1", 400, 400);
+  startCanvas("multiTouch1", 1000, 1000);
 });
 </script>
 

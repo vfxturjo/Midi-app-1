@@ -29,6 +29,7 @@ specifiers:
   svelte-transition: ^0.0.7
   tailwindcss: ^3.2.4
   tailwindcss-animate: ^1.0.5
+  tone: ^14.7.77
   victor: ^1.1.0
   vite: ^4.0.4
   vite-plugin-mkcert: ^1.13.0
@@ -46,6 +47,7 @@ dependencies:
   svelte-local-storage-store: 0.4.0_svelte@3.55.1
   svelte-tabs: 1.1.0
   svelte-transition: 0.0.7
+  tone: 14.7.77
   victor: 1.1.0
 
 devDependencies:
@@ -69,6 +71,13 @@ devDependencies:
   vite-plugin-mkcert: 1.13.0_vite@4.0.4
 
 packages:
+
+  /@babel/runtime/7.21.0:
+    resolution: {integrity: sha512-xwII0//EObnq89Ji5AKYQaRYiW/nZ3llSv29d49IuxPhKbtJoLP+9QUUZ4nVragQVtaVGeZrpB+ZtG/Pdy/POw==}
+    engines: {node: '>=6.9.0'}
+    dependencies:
+      regenerator-runtime: 0.13.11
+    dev: false
 
   /@esbuild/android-arm/0.16.17:
     resolution: {integrity: sha512-N9x1CMXVhtWEAMS7pNNONyA14f71VPQN9Cnavj1XQh6T7bskqiLLrSca4O0Vr8Wdcga943eThxnVp3JLnBMYtw==}
@@ -523,6 +532,14 @@ packages:
   /asynckit/0.4.0:
     resolution: {integrity: sha512-Oei9OH4tRh0YqU3GxhX79dM/mwVgvbZJaSNaRk+bshkj0S5cfHcgYakreBjrHwatXKbz+IoIdYLxrKim2MjW0Q==}
     dev: true
+
+  /automation-events/5.0.2:
+    resolution: {integrity: sha512-8mfgjeI22tlKeaGY8y0bDt93IIUJhQKR/ISTsnhhFkpAzCirPdQ/Rmfp3xakCTmIihLgDuIWcWygHWozYKVGyQ==}
+    engines: {node: '>=14.15.4'}
+    dependencies:
+      '@babel/runtime': 7.21.0
+      tslib: 2.5.0
+    dev: false
 
   /autoprefixer/10.4.13_postcss@8.4.21:
     resolution: {integrity: sha512-49vKpMqcZYsJjwotvt4+h/BCjJVnhGwcLpDt5xkcaOG3eLrG/HUYLagrihYsQ+qrIBgIzX1Rw7a6L8I/ZA1Atg==}
@@ -1207,6 +1224,10 @@ packages:
       picomatch: 2.3.1
     dev: true
 
+  /regenerator-runtime/0.13.11:
+    resolution: {integrity: sha512-kY1AZVr2Ra+t+piVaJ4gxaFaReZVH40AKNo7UCX6W+dEwBo/2oZJzqfuN1qLq1oL45o56cPaTXELwrTh8Fpggg==}
+    dev: false
+
   /resolve/1.22.1:
     resolution: {integrity: sha512-nBpuuYuY5jFsli/JIs1oldw6fOQCBioohqWZg/2hiaOybXOft4lonv85uDOKXdf8rhyK159cxU5cDcK/NKk8zw==}
     hasBin: true
@@ -1265,6 +1286,14 @@ packages:
     resolution: {integrity: sha512-R0XvVJ9WusLiqTCEiGCmICCMplcCkIwwR11mOSD9CR5u+IXYdiseeEuXCVAjS54zqwkLcPNnmU4OeJ6tUrWhDw==}
     engines: {node: '>=0.10.0'}
     dev: true
+
+  /standardized-audio-context/25.3.41:
+    resolution: {integrity: sha512-NCKY1kLCGN37dnCCIG4NX1LHWRgONvIU6u6GS3nzhMM9CV/M+GR48uIeojjeJBSICfWXfQ+t2N1MTdsgJz3wlA==}
+    dependencies:
+      '@babel/runtime': 7.21.0
+      automation-events: 5.0.2
+      tslib: 2.5.0
+    dev: false
 
   /strip-indent/3.0.0:
     resolution: {integrity: sha512-laJTa3Jb+VQpaC6DseHhF7dXVqHTfJPCRDaEbid/drOhgitgYku/letMUqOXFoWV0zIIUbjpdH2t+tYj4bQMRQ==}
@@ -1446,6 +1475,13 @@ packages:
       is-number: 7.0.0
     dev: true
 
+  /tone/14.7.77:
+    resolution: {integrity: sha512-tCfK73IkLHyzoKUvGq47gyDyxiKLFvKiVCOobynGgBB9Dl0NkxTM2p+eRJXyCYrjJwy9Y0XCMqD3uOYsYt2Fdg==}
+    dependencies:
+      standardized-audio-context: 25.3.41
+      tslib: 2.5.0
+    dev: false
+
   /tr46/0.0.3:
     resolution: {integrity: sha512-N3WMsuqV66lT30CrXNbEjx4GEwlow3v6rr4mCcv6prnfwhS01rkgyFdjPNBYd9br7LpXV1+Emh01fHnq2Gdgrw==}
     dev: true
@@ -1456,7 +1492,6 @@ packages:
 
   /tslib/2.5.0:
     resolution: {integrity: sha512-336iVw3rtn2BUK7ORdIAHTyxHGRIHVReokCR3XjbckJMK7ms8FysBfhLR8IXnAgy7T0PTPNBWKiH514FOW/WSg==}
-    dev: true
 
   /universal-user-agent/6.0.0:
     resolution: {integrity: sha512-isyNax3wXoKaulPDZWHQqbmIx1k2tb9fb3GGDBRxCscfYV2Ch7WxPArBsFEG8s/safwXTT7H4QGhaIkTp9447w==}

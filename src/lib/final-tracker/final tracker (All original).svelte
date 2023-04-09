@@ -1,43 +1,56 @@
-// @ts-nocheck
-/* multi-touch tracker with pointer events support and a hacky HUD */
+<script>
+import { debounce } from "./debounce.js";
 
-var canvas, c, pressure;
-// c is the canvas' context 2D
-var devicePixelRatio, container;
+var canvas, c; // c is the canvas' context 2D
+var devicePixelRatio;
+var container;
+var radius;
+var rect;
 
 var points = [];
+var pointsData = [];
 
 function draw() {
   var radiusX, radiusY, rotationAngle, pressure;
+
+  //#region //? reset for orientation change
   /* hack to work around lack of orientationchange/resize event */
+  //////////// Implement a reset button>>>???
   if (canvas.height != window.innerHeight * devicePixelRatio) {
     resetCanvas();
+    rect = canvas.getBoundingClientRect();
   } else {
     c.clearRect(0, 0, canvas.width, canvas.height);
   }
+  //#endregion
+
   c.strokeStyle = "#eee";
   c.lineWidth = "10";
 
   for (var i = 0, l = points.length; i < l; i++) {
+    pointsData["p_" + i] = i;
+
     /* if pressure property is present and not 0, set radius, otherwise default */
     if (
       typeof points[i].pressure != "undefined" &&
       points[i].pressure != null
     ) {
-      pressure = 35 + points[i].pressure * 25;
+      radius = 35 + points[i].pressure * 25;
     } else if (
       typeof points[i].force != "undefined" &&
       points[i].force != null
     ) {
-      pressure = 35 + points[i].force * 25;
+      radius = 35 + points[i].force * 25;
     } else if (
       typeof points[i].webkitForce != "undefined" &&
       points[i].webkitForce != null
     ) {
-      pressure = 35 + points[i].webkitForce * 25;
+      radius = 35 + points[i].webkitForce * 25;
     } else {
-      pressure = 50;
+      radius = 50;
     }
+
+    pointsData[i + "_radius"] = radius;
 
     pressure =
       points[i].pressure || points[i].force || points[i].webkitForce || 0.1;
@@ -59,11 +72,13 @@ function draw() {
     radiusX += pressure * 35;
     radiusY += pressure * 35;
 
+    pointsData[i + "_pressure"] = pressure;
+
     /* draw all circles */
     c.beginPath();
     c.ellipse(
-      points[i].clientX,
-      points[i].clientY,
+      points[i].clientX - rect.x, //  ///////// /////////////// ///////// /////////////////////,
+      points[i].clientY + rect.y,
       radiusX,
       radiusY,
       (rotationAngle * Math.PI) / 180,
@@ -75,12 +90,14 @@ function draw() {
 
     // for pointer events, add extra circle to denote a primary pointer
     if (points[i].isPrimary) {
+      pointsData[i + "_isPrimary"] = true;
+
       radiusX += 15;
       radiusY += 15;
       c.beginPath();
       c.ellipse(
-        points[i].clientX,
-        points[i].clientY,
+        points[i].clientX - rect.x,
+        points[i].clientY - rect.y,
         radiusX,
         radiusY,
         (rotationAngle * Math.PI) / 180,
@@ -298,7 +315,7 @@ function positionHandler(e) {
 }
 
 function init() {
-  canvas = document.createElement("canvas");
+  //   canvas = document.createElement("canvas");
   c = canvas.getContext("2d");
   container = document.createElement("div");
   container.className = "container";
@@ -358,6 +375,7 @@ function init() {
     },
     false
   );
+  rect = canvas.getBoundingClientRect();
 }
 
 function resetCanvas() {
@@ -378,3 +396,6 @@ window.addEventListener(
   },
   false
 );
+</script>
+
+<canvas id="theCanvas" bind:this="{canvas}"></canvas>
